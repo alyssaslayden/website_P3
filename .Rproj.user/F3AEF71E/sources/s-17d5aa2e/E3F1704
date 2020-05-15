@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1589415426913.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1469482758",
+    "id" : "E3F1704",
+    "lastKnownWriteTime" : 1589519448,
+    "last_content_update" : 1589519448575,
+    "path" : "~/website_P3/content/blog/2020-05-13-test-post.Rmd",
+    "project_path" : "content/blog/2020-05-13-test-post.Rmd",
+    "properties" : {
+        "cursorPosition" : "36,161",
+        "last_setup_crc32" : "17d5aa2ec269ade",
+        "scrollLine" : "35"
+    },
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

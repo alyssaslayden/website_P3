@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Alyssa Slayden Portfolio</title>
+    <link>/</link>
+    <description>Recent content on Alyssa Slayden Portfolio</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Fri, 01 May 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Ranking Star Wars Characters</title>
+      <link>/blog/test-post/</link>
+      <pubDate>Wed, 13 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/test-post/</guid>
+      <description>.This all started because of a very contentious debate about the attractiveness of various Star Wars characters. I decided to use the Star Wars dataset to settle things once and for all. I cleaned up the dataset, so that it just contained the male characters and what I thought were important descriptors, like species, hair, and eye color. I also added a column for rank, so that my friends could fill out their own copies.</description>
+    </item>
+    
+    <item>
+      <title>Salaries of Professors as Influenced by Experience, Sex, and Department</title>
+      <link>/project2/</link>
+      <pubDate>Fri, 01 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/project2/</guid>
+      <description>“Salaries” is a dataset found in the carData package in R. It contains information collected from assistant, associate, and tenured professors of a US college during the 2008-2009 nine-month academic year. Professors self-reported their professional rank at the institution, discipline, number of years since they completed their PhD, number of years of service (teaching), their sex, and their nine-month salary. 397 individuals constitute this dataset, with 358 being men and 39 being women.</description>
+    </item>
+    
+    <item>
+      <title>Global Suicide Statistics and the World Happiness Report</title>
+      <link>/project1/</link>
+      <pubDate>Sun, 15 Mar 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/project1/</guid>
+      <description>The World Health Organization (WHO) is an agency of the United Nations tasked with helping the populations of the 194 member nations live safer healthier lives. They compiled suicide statistics for 141 countries between the years of 1979 and 2016. The orignal dataset contains 43,776 rows and the six columns: country name, year, sex, age group, number of suicides, and the population of each age group. My second dataset is from the World Happiness Report (WHR), a Gallup survey of 156 countries results in a ranked list based on how happy citizens believe themselves to be.</description>
+    </item>
+    
+    <item>
+      <title>Projects</title>
+      <link>/projects/</link>
+      <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
+      
+      <guid>/projects/</guid>
+      <description>Computational Biology Projects   Global Suicide Statistics and the World Happiness Report
+  Salaries of Professors as Influenced by Experience, Sex, and Department
+  </description>
+    </item>
+    
+    <item>
+      <title>Global Suicide Statistics and the World Happiness Report</title>
+      <link>/sds348_p1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/sds348_p1/</guid>
+      <description>The World Health Organization (WHO) is an agency of the United Nations tasked with helping the populations of the 194 member nations live safer healthier lives. They compiled suicide statistics for 141 countries between the years of 1979 and 2016. The orignal dataset contains 43,776 rows and the six columns: country name, year, sex, age group, number of suicides, and the population of each age group. My second dataset is from the World Happiness Report (WHR), a Gallup survey of 156 countries results in a ranked list based on how happy citizens believe themselves to be.</description>
+    </item>
+    
+    <item>
+      <title>Salaries of Professors as Influenced by Experience, Sex, and Department</title>
+      <link>/sds348_p2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/sds348_p2/</guid>
+      <description>“Salaries” is a dataset found in the carData package in R. It contains information collected from assistant, associate, and tenured professors of a US college during the 2008-2009 nine-month academic year. Professors self-reported their professional rank at the institution, discipline, number of years since they completed their PhD, number of years of service (teaching), their sex, and their nine-month salary. 397 individuals constitute this dataset, with 358 being men and 39 being women.</description>
+    </item>
+    
+  </channel>
+</rss>

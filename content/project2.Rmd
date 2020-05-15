@@ -1,0 +1,285 @@
+---
+title: "Salaries of Professors as Influenced by Experience, Sex, and Department"
+author: "Alyssa Slayden"
+date: "2020-05-01"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+
+install_packages <- function(pkg) { 
+  
+
+  if (!(pkg %in% installed.packages()[, "Package"])){ 
+    
+    install.packages(pkg, repos='http://cran.us.r-project.org')
+  }
+  
+  library(pkg, character.only = TRUE)
+  
+} 
+
+pkg_list = c("tidyverse", "modelr", "carData", "car")
+lapply(pkg_list, install_packages)
+```
+
+"Salaries" is a dataset found in the carData package in R. It contains information collected from assistant, associate, and tenured professors of a US college during the 2008-2009 nine-month academic year. Professors self-reported their professional rank at the institution, discipline, number of years since they completed their PhD, number of years of service (teaching), their sex, and their nine-month salary. 397 individuals constitute this dataset, with 358 being men and 39 being women. "Salaries" was compiled so that the administration could monitor pay differences between male and female professors, but I think they should have been monitoring their hiring practices. Each professor's subject of specialty was assigned a binary value (A or B) under the discipline variable. Individuals of discipline A belong to a theoretical department like English, History, or Philosophy. Those of discipline B belong to an applied department such as Chemistry, Biology, or Engineering. I selected this dataset because I wished to analyze how factors like gender, subject, and experience influenced the salaries of professors much like those who teach me everyday.
+
+```{r}
+class_diag<-function(probs,truth){
+  
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  prediction<-ifelse(probs>.5,1,0)
+  acc=mean(truth==prediction)
+  sens=mean(prediction[truth==1]==1)
+  spec=mean(prediction[truth==0]==0)
+  ppv=mean(truth[prediction==1]==1)
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+```
+
+```{r}
+library(dplyr,glmnet,ggplot2)
+library(sandwich);library(lmtest)
+library(plotROC)
+library(glmnet)
+install.packages("CARS")
+sal<-Salaries%>%mutate(y=ifelse(sex=="Male",1,0))
+```
+
+```{r}
+#manova
+man1 <- manova(cbind(yrs.since.phd,yrs.service,salary)~rank, data=sal)
+summary(man1)
+
+#anova
+summary.aov(man1)
+
+#pairwise t tests
+pairwise.t.test(sal$yrs.since.phd,sal$rank,
+                p.adj="none")
+pairwise.t.test(sal$yrs.service,sal$rank,
+                p.adj="none")
+pairwise.t.test(sal$salary,sal$rank,
+                p.adj="none")
+
+#Bonferroni
+.05/13
+#type 1 error probability
+1-(1-.05)^13
+```
+
+I ran a multivariate analysis of variance, or MANOVA, on the "Salaries" dataset. The purpose of this test was to determine if there was a significant mean difference in years since PhD, years of service, or salary across the three levels of rank. The results of the MANOVA had a p-value of 2.2e-16, meaning that there was a significant mean difference across rank for one of the three numeric variables. I then ran three univariate ANOVA tests to ascertain which variable was significant. All three returned p-values of 
+2.2e-16, therefore, I could conclude that years since PhD, years of service, and salary all significantly differ according to an individual's rank. Nine pairwise t tests gave insight into the specific mean differences between assistant, associate, and tenured professors. All ranks significantly differed from each other on all three variables. The magnitude of significance corresponded to the hierarchial level of each individual's rank, meaning associate professors differed less from tenured professors than assistant professors did in years of service. Assistant and associate professors had less significant differences between each other than with professors. This revealed that while every difference was significant, associate professors are more similar to assitant professors than they are to those who have received tenure. In total, I ran 13 hypothesis tests, and my Bonferroni corrected p-value was 0.003846154. With the correction, all results remained significant. The probability that I made a Type I error was 0.4866579.
+
+```{r}
+sal%>%ggplot(aes(yrs.since.phd,yrs.service,color=rank))+geom_point() 
+sal%>%ggplot(aes(yrs.since.phd,salary,color=rank))+geom_point() 
+sal%>%ggplot(aes(yrs.service,salary,color=rank))+geom_point() 
+
+ggplot(sal, aes(x = yrs.since.phd, y = yrs.service,color=rank)) +
+geom_point(alpha = .5) + geom_density_2d(h=2) + coord_fixed() + facet_wrap(~rank)
+
+sal_num <- sal%>%select(rank,yrs.since.phd,yrs.service,salary)
+covmats<-sal_num%>%group_by(rank)%>%do(covs=cov(.[2:4]))
+for(i in 1:3){print(as.character(covmats$rank[i])); print(covmats$covs[i])}
+```
+
+While all 13 of the above tests yielded significant results, several MANOVA assumptions were violated. There is a clear linear relationship between years since PhD and year serve, but the relationship is less obvious when those two variables are plotted against salary. Additionally, the data failed the MANOVA assumption of multivariate normality. Data for assistant professors is highly concentrated, but associate and tenured professors show far too much variation to be considered normal. Finally, the data fails the homogenity of variances assumption.
+
+```{r}
+obs_tstat <- sal%>%group_by(discipline)%>%summarize(means=mean(yrs.service))%>%
+  summarize(`mean_diff:`=diff(means))
+obs_tstat
+sal%>%filter(discipline=="A")%>%summarise(mean(yrs.service))
+sal%>%filter(discipline=="B")%>%summarise(mean(yrs.service))
+rand_dist<-vector()
+for(i in 1:5000){
+new<-data.frame(time=sample(sal$yrs.since.phd),condition=sal$discipline)
+rand_dist[i]<-mean(new[new$condition=="A",]$time)-
+mean(new[new$condition=="B",]$time)}
+
+mean(rand_dist> obs_tstat| rand_dist< -obs_tstat)
+
+rand_dist <- rand_dist%>%as.data.frame
+ggplot(rand_dist,aes(x=.))+geom_histogram()+geom_vline(xintercept =-4.292869,col="blue")
+
+profs <- sal%>%group_by(discipline)
+t.test(data=profs,yrs.service~discipline)
+```
+
+The two variables years since PhD and years of service intrigued me. I believe the difference
+to be attributed to those years prior to teaching when now professors may have been conducting formative research. Research as a career seems to be much more common among those in applied departments. I wished to see if years of service truly did vary between the two disciplines.
+My null hypothesis was that the mean difference in years of service between professors in departments A and B is equal to zero. Therefore, the alternatavie hypothesis is that the difference is not equal to zero. Prior to randomization, the mean difference between the two groups was computed to be -4.292869, with department A being greater. Randomization produced a distribution centered at a mean difference of zero. As is evidenced by the graph, the observed mean difference does intersect the tail of  the randomized distribution curve. To determine if the observed t statistic was significant, I ran a Welch's T Test on the original data. The resulting p-value of 0.001134 supported my rejection the null hypothesis and conclusion that the mean difference in years of service between professors in theoretical and applied departments is not equal to zero.
+
+```{r}
+mean(sal$salary)
+mean(sal$yrs.since.phd)
+mean(sal$yrs.service)
+sal$mean_sal <- sal$salary - mean(sal$salary)
+sal$mean_yrsphd <- sal$yrs.since.phd - mean(sal$yrs.since.phd)
+sal$mean_yrsser <- sal$yrs.service - mean(sal$yrs.service)
+fit <- lm(salary~mean_yrsser*mean_yrsphd,data=sal)
+summary(fit)
+
+resids <- fit$residuals
+fitted <- fit$fitted.values
+sal%>%ggplot(aes(salary,mean_yrsphd))+geom_point()+geom_smooth(method="lm",se=F)
+fit$coefficients
+```
+
+```{r}
+#normal distribution!
+ks.test(resids, "pnorm", mean=0, sd(resids))
+
+bptest(fit)
+
+coeftest(fit, vcov = vcovHC(fit))
+```
+
+In the same vein as the randomization test above, I used this linear regression to determine if experience (years since PhD and years served) were significant predictors of salary. The intercept of the model is $123533.47, the coefficients mean centered years served, years since PhD, and the interaction are $250.52, $1056.08, and -$64.61 respectively. Every year a professor works past the mean number of years for each variable, the model predicts their salary to increase by $1241.99.
+
+Using a one-sample Kolmogorov-Smirnov test, the residuals of the model were found to be normal. This validates the normality assumption of linear regresssion. Unfortunately, a Breusch-Pagan test judged the model to be heteroskedastic, thus failing the assumption of homoskedasticity.
+
+The original model determined years since PhD and the interaction to be significant predictors, but years of service was deemed insignificant. I ran the model again with robust standard errors. There were no changes in significance as a result of the new standard errors. The adjusted R^2 value is 0.3125, therefore, years since PhD and years served account for 31.25% of the variation in salary.
+
+```{r}
+boot_dat<- sample_frac(sal, replace=T)
+samp_distn<-replicate(5000, {
+boot_dat <- sample_frac(sal, replace=T) 
+fit <- lm(salary~mean_yrsser*mean_yrsphd, data=boot_dat) 
+coef(fit) 
+})
+samp_distn %>%t%>%as.data.frame %>% summarize_all(sd)
+```
+
+Each of the bootstrapped standard errors increased against the original standard errors and decreased when compared to the robust standard errors. From this place in the middle, none of the variables would have changed in significance.
+
+```{r}
+sal2 <- sal%>%select(-sex,-mean_sal,-mean_yrsphd,-mean_yrsser)
+fit2 <- glm(y~.,data=sal2,family = "binomial")
+coef(fit2)%>%round(5)%>%data.frame #log odds
+summary(fit2)
+coef(fit2)%>%exp%>%round(5)%>%data.frame #odds
+
+sal$probs<-predict(fit2,type="response")
+table(predict=as.numeric(sal$probs>.5),truth=sal$y)%>%addmargins
+
+diag <- class_diag(sal$probs, sal$y)
+diag
+
+sal$logit<-predict(fit2,type="link")
+sal%>%ggplot()+geom_density(aes(logit,color=sex,fill=sex), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab("predictor (logit)")
+
+ROCplot<-ggplot(sal)+geom_roc(aes(d=y,m=probs), n.cuts=0) 
+ROCplot
+calc_auc(ROCplot)
+```
+
+```{r}
+sal_og <- sal2%>%select(rank,discipline,yrs.since.phd,yrs.service,salary,y)
+set.seed(1234)
+k=10 
+
+data1<-sal_og[sample(nrow(sal_og)),] 
+folds<-cut(seq(1:nrow(sal_og)),breaks=k,labels=F) 
+
+diags<-NULL
+for(i in 1:k){
+ 
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,]
+  truth<-test$y
+  
+
+  fit<-glm(y~(.),data=train,family="binomial")
+  probs<-predict(fit,newdata = test,type="response")
+  
+
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+
+
+summarize_all(diags,mean)
+```
+
+I chose to try and predict sex from all variables in the "Salaries" dataset. This was the purpose for which the data was compiled, and as a woman, I was extremely interested to know if sex could be predicted from things like salary. When I transformed sex into a binary variable, I set Male=1, so the coefficients of the model are the log odds of being male. Once exponentiated, being an assistant professor put the odds of being male at 1.60703, professor: 1.13327, discipline B:1.00262, a one unit increase in years since PhD: 0.98951, years of service: 1.05204, salary:1.00002. The greatest odds ratio is 1.8521, and it means that the odds of being a male are 1.8521 higher for assistant professors than for associate professors, which actually is good for women. I was most interested in the results of salary. For every one unit increase in salary, an individual is 1.152522 times more likely to be male. This reveals some inequality, but women only comprise a tenth of the dataset, so that most likely contributes to the difference in odds seen in the model. In fact, the summary of the model shows that none of the variables included are significant predictors of sex.
+
+All individuals were predicted to be male by the model, so the confusion matrix shows 358 true positives and 39 false positives, which is the exact number of males and females in the dataset. The model had an accuracy of 0.9017632 because females again make up only 10% of the data. Sensitivity, or the TPR, was 1, as all males were classified correctly. On the other hand, specificity, or the TNR, was 0 because all females were predicted to be male. I generated an ROC curve, the area underneath of which is the AUC. This was computed to be 0.6796304 which is far from the perfect AUC of 1. 
+
+Using 10-fold repeated sub-sampling, my model was tested on "outside" data to test its efficacy. Accuracy of the model slightly increased to 0.901859. Sensitivity and specificity remained constant, so the model continued to classify all females as male. The AUC decreased to 0.606613, which is once again, not a good value.
+
+```{r}
+
+sal_las <- sal2%>%select(yrs.since.phd,yrs.service,salary,y, discipline)
+sal%>%select(discipline)%>%mutate(disc=ifelse(discipline=="A",1,0))%>%as.matrix%>%head()
+
+w<-as.matrix(sal$discipline)
+x<-sal_las%>%select(-discipline)%>%as.matrix
+
+cv<-cv.glmnet(x,w,family="binomial")
+lasso<-glmnet(x,w,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+#only yrs.since.phd and salary are significant predictors of discipline
+
+sal_las <- sal%>%mutate(discipline=ifelse(discipline=="A",1,0))
+sal_las1 <- sal_las%>%select(-y,-rank,-sex)%>%as.data.frame
+set.seed(1234)
+
+k=10 
+
+data1<-sal_las1[sample(nrow(sal_las1)),] 
+folds<-cut(seq(1:nrow(sal_las1)),breaks=k,labels=F)
+
+diags<-NULL
+for(i in 1:k){
+
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,]
+  truth<-test$discipline
+  
+
+  fit<-glm(discipline~yrs.since.phd+salary,data=train,family="binomial")
+  probs<-predict(fit,newdata = test,type="response")
+  
+ 
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+
+
+summarize_all(diags,mean) 
+```
+I selected new variables to use in a lasso regression because sex had no significant predictors. I decided to predict discipline from years since PhD, years of service, salary, and sex. The levels of this variable correspond to theoretical (A) and applied (B) departments. Following lasso regression, the only significant variables were determined to be years since PhD and salary. This model has an out-of-sample AUC of 0.7142284. This AUC is good and greater than the non-lassoed model above.

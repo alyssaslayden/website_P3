@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Alyssa Slayden" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="../img/favicon.ico">
+    <title>Global Suicide Statistics and the World Happiness Report</title>
+    <meta name="generator" content="Hugo 0.70.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../blog/">BLOG</a></li>
+        
+        <li><a href="../projects/">PROJECTS</a></li>
+        
+        <li><a href="resume.pdf">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../project1/">Global Suicide Statistics and the World Happiness Report</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          March 15, 2020
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<p>The World Health Organization (WHO) is an agency of the United Nations tasked with helping the populations of the 194 member nations live safer healthier lives. They compiled suicide statistics for 141 countries between the years of 1979 and 2016. The orignal dataset contains 43,776 rows and the six columns: country name, year, sex, age group, number of suicides, and the population of each age group. My second dataset is from the World Happiness Report (WHR), a Gallup survey of 156 countries results in a ranked list based on how happy citizens believe themselves to be. The 2019 WHR asked sample groups in each country to rate how much the variables: GDP per capita, social support, healthy life expectancy,freedom to make life choices, generosity, and perceptions of corruption influence their happiness. Averaged answers for each category are summed to find each country’s Happiness Score, which is then used in the rankings. I worked with the 2017 WHR for my final project in Biostatistics last year, and I thought it would be interesting to use the 2019 data in a new way. In our minds, happiness and suicide have almost a perfectly negative correlation with eachother. It would seem that the lowest ranking or unhappiest countries would have higher rates of suicide. I chose these datasets to invesitgate the effects of overall perceived happiness on suicides as well as what factors of the WHR contribute most to suicide rates among the world population.</p>
+<p>The WHR and WHO Suicide Statistics datasets were both very tidy to begin with, so I did not have to do to much to clean them up. I started with the WHO data. I omitted all rows containing NAs, dropped the variables age group and sex, and created new summary variables using mutate. The WHR only contains rows for one year, so I selected the max year for each country and made new columns for total population (across all age groups in the highest available year), total suicides, and found the suicide rate by dividing total suicides by total population. Within the WHR dataset, I did nothing but remove all rows containing NAs. For the sake of the project, I pivoted the data wider by making each country in WHR it’s own column with its ranking as the value, and then used pivot_longer to restore the data to its original form.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.2.1          ✔ purrr   0.3.3     
+## ✔ tibble  2.1.3          ✔ dplyr   0.8.3     
+## ✔ tidyr   1.0.0.9000     ✔ stringr 1.4.0     
+## ✔ readr   1.3.1          ✔ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggplot2)
+who &lt;- read.csv(&quot;who_suicide_statistics.csv&quot;)
+who &lt;- who %&gt;% group_by(country, year) %&gt;% na.omit %&gt;% 
+  select(-age,-sex) %&gt;% 
+  mutate(tot.pop = sum(population)) %&gt;% select(-population)%&gt;%
+  mutate(tot.sui = sum(suicides_no)) %&gt;% select(-suicides_no) %&gt;%
+  distinct() %&gt;% mutate(sui.rate = (tot.sui/tot.pop)*100)
+who &lt;- who %&gt;% group_by(country) %&gt;% filter(year == max(year))
+whr &lt;- read.csv(&quot;world_happiness_report.csv&quot;)
+whr &lt;- whr %&gt;% na.omit %&gt;% 
+  rename(country = Country.or.region)%&gt;%
+  arrange(desc(Overall.rank))
+whr_wide &lt;- whr %&gt;% pivot_wider(names_from = country, values_from = Overall.rank)
+whr_longer &lt;- whr_wide %&gt;% pivot_longer(8:163, names_to = &quot;country&quot;)
+pivot_longer(whr_wide, 8:163, names_to = &quot;country&quot;, values_to = &quot;Ranking&quot;, values_drop_na = T) </code></pre>
+<pre><code>## # A tibble: 156 x 9
+##    Score GDP.per.capita Social.support Healthy.life.ex… Freedom.to.make…
+##    &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;
+##  1  2.85          0.306          0.575            0.295            0.01 
+##  2  3.08          0.026          0                0.105            0.225
+##  3  3.20          0.35           0.517            0.361            0    
+##  4  3.23          0.476          0.885            0.499            0.417
+##  5  3.33          0.359          0.711            0.614            0.555
+##  6  3.38          0.287          1.16             0.463            0.143
+##  7  3.41          0.191          0.56             0.495            0.443
+##  8  3.46          0.619          0.378            0.44             0.013
+##  9  3.49          1.04           1.14             0.538            0.455
+## 10  3.60          0.323          0.688            0.449            0.026
+## # … with 146 more rows, and 4 more variables: Generosity &lt;dbl&gt;,
+## #   Perceptions.of.corruption &lt;dbl&gt;, country &lt;chr&gt;, Ranking &lt;int&gt;</code></pre>
+<pre class="r"><code>whr &lt;- whr %&gt;% arrange(Overall.rank)</code></pre>
+<p>I used a full join by country to combine the WHR and WHO Suicide Statistics datasets. I chose the full join because I didn’t want to worry about any data being dropped through the joining process. After joining, I looked at the data and saw that a lot of countries had data for one set but not the other. 122 rows were dropped because they lacked complete data. Many of the dropped countries are smaller nations who were not included in the WHR, this could potentially skew the data toward more developed countries.</p>
+<pre class="r"><code>join_data &lt;- whr %&gt;% full_join(who)</code></pre>
+<pre><code>## Joining, by = &quot;country&quot;</code></pre>
+<pre><code>## Warning: Column `country` joining factors with different levels, coercing to
+## character vector</code></pre>
+<pre class="r"><code>final_data &lt;- join_data %&gt;% na.omit</code></pre>
+<p>I used the summarize function to create many different summary statistics, to help me understand my data better. I first looked at the difference in average scores between the original WHR data and my joined and tidied version. The average score rose from 5.407096 to 6.144447, proving my fear that the removal of NAs would disproportionately affect unhappier/less developed countries. Another interesting statistic was the mean and standard deviation of total suicides, 1935.395 and 3393.004 respectively. This shows that there is a lot of variation within the number of suicides between every country. This translated to suicide rate, which I calculated earlier using summary statistics, with the maximum rate being 0.0303995%n and the minimum, .00006084794%. The correlation heat map of all numeric variables in the dataset yielded disappointing results. I expected to find a strong negative correlation between Overall Rank and suicide rate or total suicides, but the data showed only a -0.1 and -0.04 correlation for each. Almost all WHR variables showed positive correlations with suicide rate, which I again did not expect. I thought that as happiness increased, rates of suicide would decrease, but the correlation table shows that not to be the case. The highest correlation values between WHR variables and suicide rate are social support (0.41), healthy life expectancy (0.24), and GDP per capita (0.19).</p>
+<pre class="r"><code>whr %&gt;% summarize(avg.Score = mean(Score), sd.Score = sd(Score))</code></pre>
+<pre><code>##   avg.Score sd.Score
+## 1  5.407096  1.11312</code></pre>
+<pre class="r"><code>final_data %&gt;% summarize(avg.Score = mean(Score), sd.Score = sd(Score))</code></pre>
+<pre><code>##   avg.Score  sd.Score
+## 1  6.144447 0.8612737</code></pre>
+<pre class="r"><code>final_data %&gt;% summarize(avg.pop = mean(tot.pop), sd.pop = sd(tot.pop))</code></pre>
+<pre><code>##    avg.pop   sd.pop
+## 1 21899407 33341410</code></pre>
+<pre class="r"><code>final_data %&gt;% summarize(avg.sui = mean(tot.sui), sd.sui = sd(tot.sui))</code></pre>
+<pre><code>##    avg.sui   sd.sui
+## 1 1935.395 3393.004</code></pre>
+<pre class="r"><code>final_data %&gt;% summarize(avg.rate = mean(sui.rate), sd.rate = sd(sui.rate))</code></pre>
+<pre><code>##     avg.rate     sd.rate
+## 1 0.01014467 0.006335994</code></pre>
+<pre class="r"><code>final_data %&gt;% summarize(max.rate = max(sui.rate), 
+                         min.rate = min(sui.rate))</code></pre>
+<pre><code>##    max.rate     min.rate
+## 1 0.0303995 6.084794e-05</code></pre>
+<pre class="r"><code>final_data %&gt;% filter(sui.rate==max(sui.rate))</code></pre>
+<pre><code>##   Overall.rank   country Score GDP.per.capita Social.support
+## 1           42 Lithuania 6.149          1.238          1.515
+##   Healthy.life.expectancy Freedom.to.make.life.choices Generosity
+## 1                   0.818                        0.291      0.043
+##   Perceptions.of.corruption year tot.pop tot.sui  sui.rate
+## 1                     0.042 2016 2717150     826 0.0303995</code></pre>
+<pre class="r"><code>final_data %&gt;% summarize(max.score = max(Score), 
+                         min.score = min(Score))</code></pre>
+<pre><code>##   max.score min.score
+## 1     7.769     4.166</code></pre>
+<pre class="r"><code>final_data &lt;- final_data %&gt;% mutate(year = as.character(year))
+final_data %&gt;% group_by(year) %&gt;% 
+  select(tot.pop, tot.sui, sui.rate) %&gt;% summarize_all(mean) </code></pre>
+<pre><code>## Adding missing grouping variables: `year`</code></pre>
+<pre><code>## # A tibble: 9 x 4
+##   year    tot.pop tot.sui sui.rate
+##   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
+## 1 2006  17891558    4015  0.0224  
+## 2 2007   7921100      55  0.000694
+## 3 2009    592234     107  0.0181  
+## 4 2010   5287880.    104. 0.00246 
+## 5 2011  43401402    1250. 0.00242 
+## 6 2013  18722303    2284. 0.0123  
+## 7 2014  11334115.   1317. 0.00902 
+## 8 2015  30915820.   2637. 0.0101  
+## 9 2016  10004425.   1046. 0.0122</code></pre>
+<pre class="r"><code>final_cor &lt;- final_data %&gt;% select(-country, -year) %&gt;% cor()%&gt;%
+  as.data.frame() %&gt;% rownames_to_column %&gt;%
+  pivot_longer(-1,names_to=&quot;name&quot;,values_to=&quot;correlation&quot;)
+final_cor%&gt;%ggplot(aes(rowname,name,fill=correlation))+
+  geom_tile()+
+  scale_fill_gradient2(low=&quot;royalblue3&quot;,mid=&quot;white&quot;,high=&quot;palegreen2&quot;)+ 
+  geom_text(aes(label=round(correlation,2)),color = &quot;black&quot;, size = 2)+ 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+ 
+  coord_fixed()</code></pre>
+<p><img src="../project1_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>final_data &lt;- final_data%&gt;%
+  mutate(rank.cat = case_when(Overall.rank&gt;69 ~ &quot;Fourth&quot;, 
+                        43&lt;=Overall.rank &amp; Overall.rank&lt;=69 ~ &quot;Third&quot;,
+                        21&lt;=Overall.rank &amp; Overall.rank&lt;= 42 ~ &quot;Second&quot;,
+                              Overall.rank&lt;=20 ~ &quot;First&quot;))</code></pre>
+<p>The plot, “Components of Total Happiness Score by Rank Quartile”, depicts the proportional contribution of each WHR variable to the Happiness Score of countries in each rank quartile. Across all groups, social support is the most important factor to happiness, followed closely by GDP per capita. Perceptions of corruption is shown to be the least important to overall happiness.</p>
+<pre class="r"><code>library(reshape2)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;reshape2&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
+## 
+##     smiths</code></pre>
+<pre class="r"><code>df &lt;- final_data %&gt;% 
+  select(-Overall.rank,-country,-Score,-year,-tot.pop,-tot.sui, -sui.rate)%&gt;% group_by(rank.cat) %&gt;% summarize_all(mean)
+df_molten &lt;- melt(df, value.name=&quot;Value&quot;, variable.name=&quot;Variable&quot;, na.rm=TRUE)</code></pre>
+<pre><code>## Using rank.cat as id variables</code></pre>
+<pre class="r"><code>plot2 &lt;- df_molten %&gt;% ggplot(aes(x = Variable, y = Value, fill = rank.cat))+
+  geom_bar(position = &quot;dodge&quot;, stat = &quot;identity&quot;) + 
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  scale_fill_brewer(palette = &quot;YlGnBu&quot;) + ggtitle(&quot;Components of Total Happiness Score by Rank Quartile&quot;) + xlab(&quot;Component of Total Happiness Score&quot;)
+plot2 + theme(legend.title=element_blank())</code></pre>
+<p><img src="../project1_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Social support had the highest correlation with suicide rate and was found to be the highest contributor to overall happiness. “Suicide Rate and Social Support” shows the realtionship between the two, faceted by ranking quartile. Values for social support tend to be fairly consitent between each country and rank quartile. The fourth quartile shows much more variability, but not in any sort of logical fashion. One would believe that those countries with low social support scores, would exhibit higher suicide rates, but that does not appear to be the case. Another interesting element of this graph is the spread of suicide rate. In the first quartile, the points are condensed and the range of suicide rate values is small. The second quartile shows the greatest variation in suicide rate. It stretches from Bahrain (0.0007413717%) to the country with the highest suicide rate in the dataset, Lithuania (0.0303995%).</p>
+<pre class="r"><code>final_data %&gt;%
+ggplot(aes(x=sui.rate, y =Social.support, color = rank.cat)) +
+  geom_point()+geom_line()+scale_color_brewer(palette = &quot;YlGnBu&quot;)+
+  scale_x_continuous(breaks=seq(0, 0.03, .005))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  facet_wrap(~rank.cat)+ theme(legend.title=element_blank()) +
+  ggtitle(&quot;Suicide Rate and Social Support&quot;)+
+  xlab(&quot;Suicide Rate&quot;) + ylab(&quot;Social Support&quot;)</code></pre>
+<p><img src="../project1_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>In these two graphs, I wanted to look at the effect of population on suicides by comparing the average number of suicides and the average suicide rates of each ranking quartile. The second quartile leads in average number of suicides with 2461.895, followed closely by third, (2417.105)], first (1798.368), and fourth (1064.211). However, when normalized by population, the order changes. When observing average suicide rate, the highest rate belongs to the first quartile group (0.01184895%). Countries in the third quartile group follow (0.01031495%), fourth (0.009402343%), and finally, the second quartile group (0.00901246%). This shift in order is explained by the average populations of the groups. The second quartile has the largest average population (31483685), then third (23317412), fourth (17338072), and first (15458458). While the second and third quartile groups have the highest average number of suicides, their high average population sizes lower their average suicide rates.</p>
+<pre class="r"><code>final_data %&gt;%  ggplot(aes(x=rank.cat, y=tot.sui, fill = rank.cat))+
+  geom_bar(stat = &quot;summary&quot;)+
+  geom_errorbar(aes(width = 0.3), stat=&quot;summary&quot;,position=&quot;dodge&quot;)+
+  scale_fill_brewer(palette = &quot;YlGnBu&quot;) +
+  ggtitle(&quot;Average Number of Suicides by Rank Quartile&quot;) +
+  xlab(&quot;Ranking Quartile&quot;) + ylab(&quot;Average Number of Suicides&quot;)+
+  theme(legend.title=element_blank())</code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()
+## No summary function supplied, defaulting to `mean_se()</code></pre>
+<p><img src="../project1_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>final_data %&gt;%  ggplot(aes(x=rank.cat, y=sui.rate, fill = rank.cat))+
+  geom_bar(stat = &quot;summary&quot;)+
+  geom_errorbar(aes(width = 0.3), stat=&quot;summary&quot;,position=&quot;dodge&quot;)+
+  scale_fill_brewer(palette = &quot;YlGnBu&quot;) +
+  ggtitle(&quot;Average Suicide Rate by Rank Quartile&quot;) +
+  xlab(&quot;Ranking Quartile&quot;) + ylab(&quot;Average Suicide Rate&quot;)+
+  theme(legend.title=element_blank())</code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()
+## No summary function supplied, defaulting to `mean_se()</code></pre>
+<p><img src="../project1_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<p>My main objective of this project was to investigate the possible realtionship between WHR ranking and reported suicides across the globe. Using a PAM Clustering Analysis, I applied four medoids to a scatterplot of Overall Rank v. Total Number of Suicides. I colored the points by their ranking quartile and point shape corresponds to cluster. The analysis shows that there is no clear distinction between ranking quartile and number of suicides. Every cluster has at least one point from each ranking quartile. It is unclear as to whether or not there is any link between WHR ranking and suicide on a global scale. I believe that differences in data collection between the two studies, as well as the large number of countries that I was forced to drop from the joined dataset contributed to the indefinite results of the project.</p>
+<pre class="r"><code>library(cluster)
+clust_dat&lt;-final_data%&gt;%select(Overall.rank,tot.sui)
+pam1&lt;-clust_dat%&gt;%pam(k=4)
+pamclust&lt;-clust_dat%&gt;%mutate(cluster=as.factor(pam1$clustering))
+pamclust%&gt;%mutate(rank.cat=final_data$rank.cat)%&gt;%
+  ggplot(aes(Overall.rank, tot.sui, color=rank.cat, shape=cluster))+geom_point(size=4)+ggtitle(&quot;PAM&quot;) +
+  scale_color_brewer(palette = &quot;YlGnBu&quot;)+
+  ggtitle(&quot;PAM Clustering Analysis&quot;) + 
+  xlab(&quot;Overall Rank&quot;) + ylab(&quot;Total Number of Suicides&quot;)+scale_y_log10() </code></pre>
+<p><img src="../project1_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../js/docs.min.js"></script>
+<script src="../js/main.js"></script>
+
+<script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

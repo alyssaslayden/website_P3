@@ -1,0 +1,422 @@
+---
+title: "Salaries of Professors as Influenced by Experience, Sex, and Department"
+author: "Alyssa Slayden"
+date: "2020-05-01"
+output: pdf_document
+---
+
+
+
+<p>“Salaries” is a dataset found in the carData package in R. It contains information collected from assistant, associate, and tenured professors of a US college during the 2008-2009 nine-month academic year. Professors self-reported their professional rank at the institution, discipline, number of years since they completed their PhD, number of years of service (teaching), their sex, and their nine-month salary. 397 individuals constitute this dataset, with 358 being men and 39 being women. “Salaries” was compiled so that the administration could monitor pay differences between male and female professors, but I think they should have been monitoring their hiring practices. Each professor’s subject of specialty was assigned a binary value (A or B) under the discipline variable. Individuals of discipline A belong to a theoretical department like English, History, or Philosophy. Those of discipline B belong to an applied department such as Chemistry, Biology, or Engineering. I selected this dataset because I wished to analyze how factors like gender, subject, and experience influenced the salaries of professors much like those who teach me everyday.</p>
+<pre class="r"><code>class_diag&lt;-function(probs,truth){
+  
+  if(is.numeric(truth)==FALSE &amp; is.logical(truth)==FALSE) truth&lt;-as.numeric(truth)-1
+  
+  tab&lt;-table(factor(probs&gt;.5,levels=c(&quot;FALSE&quot;,&quot;TRUE&quot;)),truth)
+  prediction&lt;-ifelse(probs&gt;.5,1,0)
+  acc=mean(truth==prediction)
+  sens=mean(prediction[truth==1]==1)
+  spec=mean(prediction[truth==0]==0)
+  ppv=mean(truth[prediction==1]==1)
+  
+  #CALCULATE EXACT AUC
+  ord&lt;-order(probs, decreasing=TRUE)
+  probs &lt;- probs[ord]; truth &lt;- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup&lt;-c(probs[-1]&gt;=probs[-length(probs)], FALSE)
+  TPR&lt;-c(0,TPR[!dup],1); FPR&lt;-c(0,FPR[!dup],1)
+  
+  n &lt;- length(TPR)
+  auc&lt;- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}</code></pre>
+<pre class="r"><code>library(dplyr,glmnet,ggplot2)
+library(sandwich);library(lmtest)
+library(plotROC)
+library(glmnet)
+install.packages(&quot;CARS&quot;)
+sal&lt;-Salaries%&gt;%mutate(y=ifelse(sex==&quot;Male&quot;,1,0))</code></pre>
+<pre class="r"><code>#manova
+man1 &lt;- manova(cbind(yrs.since.phd,yrs.service,salary)~rank, data=sal)
+summary(man1)</code></pre>
+<pre><code>## Df Pillai approx F num Df den Df Pr(&gt;F)
+## rank 2 0.63281 60.633 6 786 &lt; 2.2e-16 ***
+## Residuals 394
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#anova
+summary.aov(man1)</code></pre>
+<pre><code>## Response yrs.since.phd :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## rank 2 32390 16194.8 191.18 &lt; 2.2e-16 ***
+## Residuals 394 33376 84.7
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response yrs.service :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## rank 2 24812 12406 115.9 &lt; 2.2e-16 ***
+## Residuals 394 42175 107
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response salary :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## rank 2 1.4323e+11 7.1616e+10 128.22 &lt; 2.2e-16 ***
+## Residuals 394 2.2007e+11 5.5855e+08
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#pairwise t tests
+pairwise.t.test(sal$yrs.since.phd,sal$rank,
+                p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  sal$yrs.since.phd and sal$rank 
+## 
+##           AsstProf AssocProf
+## AssocProf 3.6e-10  -        
+## Prof      &lt; 2e-16  &lt; 2e-16  
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(sal$yrs.service,sal$rank,
+                p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  sal$yrs.service and sal$rank 
+## 
+##           AsstProf AssocProf
+## AssocProf 2.0e-07  -        
+## Prof      &lt; 2e-16  3.2e-13  
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(sal$salary,sal$rank,
+                p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  sal$salary and sal$rank 
+## 
+##           AsstProf AssocProf
+## AssocProf 0.0016   -        
+## Prof      &lt;2e-16   &lt;2e-16   
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>#Bonferroni
+.05/13</code></pre>
+<pre><code>## [1] 0.003846154</code></pre>
+<pre class="r"><code>#type 1 error probability
+1-(1-.05)^13</code></pre>
+<pre><code>## [1] 0.4866579</code></pre>
+<p>I ran a multivariate analysis of variance, or MANOVA, on the “Salaries” dataset. The purpose of this test was to determine if there was a significant mean difference in years since PhD, years of service, or salary across the three levels of rank. The results of the MANOVA had a p-value of 2.2e-16, meaning that there was a significant mean difference across rank for one of the three numeric variables. I then ran three univariate ANOVA tests to ascertain which variable was significant. All three returned p-values of 2.2e-16, therefore, I could conclude that years since PhD, years of service, and salary all significantly differ according to an individual’s rank. Nine pairwise t tests gave insight into the specific mean differences between assistant, associate, and tenured professors. All ranks significantly differed from each other on all three variables. The magnitude of significance corresponded to the hierarchial level of each individual’s rank, meaning associate professors differed less from tenured professors than assistant professors did in years of service. Assistant and associate professors had less significant differences between each other than with professors. This revealed that while every difference was significant, associate professors are more similar to assitant professors than they are to those who have received tenure. In total, I ran 13 hypothesis tests, and my Bonferroni corrected p-value was 0.003846154. With the correction, all results remained significant. The probability that I made a Type I error was 0.4866579.</p>
+<pre class="r"><code>sal%&gt;%ggplot(aes(yrs.since.phd,yrs.service,color=rank))+geom_point() </code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sal%&gt;%ggplot(aes(yrs.since.phd,salary,color=rank))+geom_point() </code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sal%&gt;%ggplot(aes(yrs.service,salary,color=rank))+geom_point() </code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(sal, aes(x = yrs.since.phd, y = yrs.service,color=rank)) +
+geom_point(alpha = .5) + geom_density_2d(h=2) + coord_fixed() + facet_wrap(~rank)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-4.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sal_num &lt;- sal%&gt;%select(rank,yrs.since.phd,yrs.service,salary)
+covmats&lt;-sal_num%&gt;%group_by(rank)%&gt;%do(covs=cov(.[2:4]))
+for(i in 1:3){print(as.character(covmats$rank[i])); print(covmats$covs[i])}</code></pre>
+<pre><code>## [1] &quot;AsstProf&quot;
+## [[1]]
+##               yrs.since.phd yrs.service       salary
+## yrs.since.phd      6.458616    1.748304    -3289.074
+## yrs.service        1.748304    2.237449     1743.627
+## salary         -3289.074175 1743.626866 66816117.409
+## 
+## [1] &quot;AssocProf&quot;
+## [[1]]
+##               yrs.since.phd yrs.service       salary
+## yrs.since.phd      93.17237     90.4184    -38438.19
+## yrs.service        90.41840    102.0136    -40264.14
+## salary         -38438.18552 -40264.1379 191315920.57
+## 
+## [1] &quot;Prof&quot;
+## [[1]]
+##               yrs.since.phd  yrs.service        salary
+## yrs.since.phd     102.18845     98.94995 -1.651423e+02
+## yrs.service        98.94995    134.33952 -1.602912e+04
+## salary           -165.14235 -16029.11946  7.683249e+08</code></pre>
+<p>While all 13 of the above tests yielded significant results, several MANOVA assumptions were violated. There is a clear linear relationship between years since PhD and year serve, but the relationship is less obvious when those two variables are plotted against salary. Additionally, the data failed the MANOVA assumption of multivariate normality. Data for assistant professors is highly concentrated, but associate and tenured professors show far too much variation to be considered normal. Finally, the data fails the homogenity of variances assumption.</p>
+<pre class="r"><code>obs_tstat &lt;- sal%&gt;%group_by(discipline)%&gt;%summarize(means=mean(yrs.service))%&gt;%
+  summarize(`mean_diff:`=diff(means))
+obs_tstat</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `mean_diff:`
+##          &lt;dbl&gt;
+## 1        -4.29</code></pre>
+<pre class="r"><code>sal%&gt;%filter(discipline==&quot;A&quot;)%&gt;%summarise(mean(yrs.service))</code></pre>
+<pre><code>##   mean(yrs.service)
+## 1          19.95028</code></pre>
+<pre class="r"><code>sal%&gt;%filter(discipline==&quot;B&quot;)%&gt;%summarise(mean(yrs.service))</code></pre>
+<pre><code>##   mean(yrs.service)
+## 1          15.65741</code></pre>
+<pre class="r"><code>rand_dist&lt;-vector()
+for(i in 1:5000){
+new&lt;-data.frame(time=sample(sal$yrs.since.phd),condition=sal$discipline)
+rand_dist[i]&lt;-mean(new[new$condition==&quot;A&quot;,]$time)-
+mean(new[new$condition==&quot;B&quot;,]$time)}
+
+mean(rand_dist&gt; obs_tstat| rand_dist&lt; -obs_tstat)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code>rand_dist &lt;- rand_dist%&gt;%as.data.frame
+ggplot(rand_dist,aes(x=.))+geom_histogram()+geom_vline(xintercept =-4.292869,col=&quot;blue&quot;)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>profs &lt;- sal%&gt;%group_by(discipline)
+t.test(data=profs,yrs.service~discipline)</code></pre>
+<pre><code>##
+## Welch Two Sample t-test
+##
+## data: yrs.service by discipline
+## t = 3.2811, df = 362.9, p-value = 0.001134
+## alternative hypothesis: true difference in means is not
+equal to 0
+## 95 percent confidence interval:
+## 1.719926 6.865811
+## sample estimates:
+## mean in group A mean in group B
+## 19.95028 15.65741</code></pre>
+<p>The two variables years since PhD and years of service intrigued me. I believe the difference to be attributed to those years prior to teaching when now professors may have been conducting formative research. Research as a career seems to be much more common among those in applied departments. I wished to see if years of service truly did vary between the two disciplines. My null hypothesis was that the mean difference in years of service between professors in departments A and B is equal to zero. Therefore, the alternatavie hypothesis is that the difference is not equal to zero. Prior to randomization, the mean difference between the two groups was computed to be -4.292869, with department A being greater. Randomization produced a distribution centered at a mean difference of zero. As is evidenced by the graph, the observed mean difference does intersect the tail of the randomized distribution curve. To determine if the observed t statistic was significant, I ran a Welch’s T Test on the original data. The resulting p-value of 0.001134 supported my rejection the null hypothesis and conclusion that the mean difference in years of service between professors in theoretical and applied departments is not equal to zero.</p>
+<pre class="r"><code>mean(sal$salary)</code></pre>
+<pre><code>## [1] 113706.5</code></pre>
+<pre class="r"><code>mean(sal$yrs.since.phd)</code></pre>
+<pre><code>## [1] 22.31486</code></pre>
+<pre class="r"><code>mean(sal$yrs.service)</code></pre>
+<pre><code>## [1] 17.61461</code></pre>
+<pre class="r"><code>sal$mean_sal &lt;- sal$salary - mean(sal$salary)
+sal$mean_yrsphd &lt;- sal$yrs.since.phd - mean(sal$yrs.since.phd)
+sal$mean_yrsser &lt;- sal$yrs.service - mean(sal$yrs.service)
+fit &lt;- lm(salary~mean_yrsser*mean_yrsphd,data=sal)
+summary(fit)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = salary ~ mean_yrsser * mean_yrsphd, data =
+sal)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -63823 -17292 -2538 13158 107001
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 123533.470 1698.633 72.725 &lt; 2e-16 ***
+## mean_yrsser 250.528 254.880 0.983 0.326
+## mean_yrsphd 1056.086 242.975 4.346 1.76e-05 ***
+## mean_yrsser:mean_yrsphd -64.617 7.487 -8.630 &lt; 2e-16 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 25120 on 393 degrees of freedom
+## Multiple R-squared: 0.3177, Adjusted R-squared: 0.3125
+## F-statistic: 60.99 on 3 and 393 DF, p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>resids &lt;- fit$residuals
+fitted &lt;- fit$fitted.values
+sal%&gt;%ggplot(aes(salary,mean_yrsphd))+geom_point()+geom_smooth(method=&quot;lm&quot;,se=F)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fit$coefficients</code></pre>
+<pre><code>## (Intercept) mean_yrsser mean_yrsphd
+mean_yrsser:mean_yrsphd
+## 123533.47023 250.52836 1056.08650 -64.61694</code></pre>
+<pre class="r"><code>#normal distribution!
+ks.test(resids, &quot;pnorm&quot;, mean=0, sd(resids))</code></pre>
+<pre><code>## 
+##  One-sample Kolmogorov-Smirnov test
+## 
+## data:  resids
+## D = 0.062195, p-value = 0.09271
+## alternative hypothesis: two-sided</code></pre>
+<pre class="r"><code>bptest(fit)</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  fit
+## BP = 44.85, df = 3, p-value = 9.957e-10</code></pre>
+<pre class="r"><code>coeftest(fit, vcov = vcovHC(fit))</code></pre>
+<pre><code>##
+## t test of coefficients:
+##
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 123533.470 1974.967 62.5496 &lt; 2.2e-16 ***
+## mean_yrsser 250.528 310.707 0.8063 0.4205478
+## mean_yrsphd 1056.086 294.532 3.5856 0.0003786 ***
+## mean_yrsser:mean_yrsphd -64.617 11.010 -5.8687 9.343e-09
+***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<p>In the same vein as the randomization test above, I used this linear regression to determine if experience (years since PhD and years served) were significant predictors of salary. The intercept of the model is $123533.47, the coefficients mean centered years served, years since PhD, and the interaction are $250.52, $1056.08, and -$64.61 respectively. Every year a professor works past the mean number of years for each variable, the model predicts their salary to increase by $1241.99.</p>
+<p>Using a one-sample Kolmogorov-Smirnov test, the residuals of the model were found to be normal. This validates the normality assumption of linear regresssion. Unfortunately, a Breusch-Pagan test judged the model to be heteroskedastic, thus failing the assumption of homoskedasticity.</p>
+<p>The original model determined years since PhD and the interaction to be significant predictors, but years of service was deemed insignificant. I ran the model again with robust standard errors. There were no changes in significance as a result of the new standard errors. The adjusted R^2 value is 0.3125, therefore, years since PhD and years served account for 31.25% of the variation in salary.</p>
+<pre class="r"><code>boot_dat&lt;- sample_frac(sal, replace=T)
+samp_distn&lt;-replicate(5000, {
+boot_dat &lt;- sample_frac(sal, replace=T) 
+fit &lt;- lm(salary~mean_yrsser*mean_yrsphd, data=boot_dat) 
+coef(fit) 
+})
+samp_distn %&gt;%t%&gt;%as.data.frame %&gt;% summarize_all(sd)</code></pre>
+<pre><code>## (Intercept) mean_yrsser mean_yrsphd
+mean_yrsser:mean_yrsphd
+## 1 1935.616 306.5221 287.4354 10.46295</code></pre>
+<p>Each of the bootstrapped standard errors increased against the original standard errors and decreased when compared to the robust standard errors. From this place in the middle, none of the variables would have changed in significance.</p>
+<pre class="r"><code>sal2 &lt;- sal%&gt;%select(-sex,-mean_sal,-mean_yrsphd,-mean_yrsser)
+fit2 &lt;- glm(y~.,data=sal2,family = &quot;binomial&quot;)
+coef(fit2)%&gt;%round(5)%&gt;%data.frame #log odds</code></pre>
+<pre><code>##                      .
+## (Intercept)    0.33245
+## rankAssocProf -0.47439
+## rankProf      -0.34928
+## disciplineB    0.00262
+## yrs.since.phd -0.01054
+## yrs.service    0.05073
+## salary         0.00002</code></pre>
+<pre class="r"><code>summary(fit2)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = y ~ ., family = &quot;binomial&quot;, data = sal2)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.6542   0.2827   0.3777   0.5454   0.7294  
+## 
+## Coefficients:
+##                 Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept)    3.325e-01  8.435e-01   0.394    0.693
+## rankAssocProf -4.744e-01  5.368e-01  -0.884    0.377
+## rankProf      -3.493e-01  7.437e-01  -0.470    0.639
+## disciplineB    2.620e-03  3.762e-01   0.007    0.994
+## yrs.since.phd -1.054e-02  3.988e-02  -0.264    0.791
+## yrs.service    5.073e-02  3.675e-02   1.381    0.167
+## salary         1.529e-05  1.021e-05   1.497    0.134
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 255.03  on 396  degrees of freedom
+## Residual deviance: 240.27  on 390  degrees of freedom
+## AIC: 254.27
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>coef(fit2)%&gt;%exp%&gt;%round(5)%&gt;%data.frame #odds</code></pre>
+<pre><code>##                     .
+## (Intercept)   1.39439
+## rankAssocProf 0.62227
+## rankProf      0.70519
+## disciplineB   1.00262
+## yrs.since.phd 0.98951
+## yrs.service   1.05204
+## salary        1.00002</code></pre>
+<pre class="r"><code>sal$probs&lt;-predict(fit2,type=&quot;response&quot;)
+table(predict=as.numeric(sal$probs&gt;.5),truth=sal$y)%&gt;%addmargins</code></pre>
+<pre><code>##        truth
+## predict   0   1 Sum
+##     1    39 358 397
+##     Sum  39 358 397</code></pre>
+<pre class="r"><code>diag &lt;- class_diag(sal$probs, sal$y)
+diag</code></pre>
+<pre><code>##         acc sens spec       ppv       auc
+## 1 0.9017632    1    0 0.9017632 0.6796304</code></pre>
+<pre class="r"><code>sal$logit&lt;-predict(fit2,type=&quot;link&quot;)
+sal%&gt;%ggplot()+geom_density(aes(logit,color=sex,fill=sex), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab(&quot;predictor (logit)&quot;)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ROCplot&lt;-ggplot(sal)+geom_roc(aes(d=y,m=probs), n.cuts=0) 
+ROCplot</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-9-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.6796304</code></pre>
+<pre class="r"><code>sal_og &lt;- sal2%&gt;%select(rank,discipline,yrs.since.phd,yrs.service,salary,y)
+set.seed(1234)
+k=10 
+
+data1&lt;-sal_og[sample(nrow(sal_og)),] 
+folds&lt;-cut(seq(1:nrow(sal_og)),breaks=k,labels=F) 
+
+diags&lt;-NULL
+for(i in 1:k){
+ 
+  train&lt;-data1[folds!=i,] 
+  test&lt;-data1[folds==i,]
+  truth&lt;-test$y
+  
+
+  fit&lt;-glm(y~(.),data=train,family=&quot;binomial&quot;)
+  probs&lt;-predict(fit,newdata = test,type=&quot;response&quot;)
+  
+
+  diags&lt;-rbind(diags,class_diag(probs,truth))
+}
+
+
+summarize_all(diags,mean)</code></pre>
+<pre><code>##        acc sens spec      ppv      auc
+## 1 0.901859    1    0 0.901859 0.606613</code></pre>
+<p>I chose to try and predict sex from all variables in the “Salaries” dataset. This was the purpose for which the data was compiled, and as a woman, I was extremely interested to know if sex could be predicted from things like salary. When I transformed sex into a binary variable, I set Male=1, so the coefficients of the model are the log odds of being male. Once exponentiated, being an assistant professor put the odds of being male at 1.60703, professor: 1.13327, discipline B:1.00262, a one unit increase in years since PhD: 0.98951, years of service: 1.05204, salary:1.00002. The greatest odds ratio is 1.8521, and it means that the odds of being a male are 1.8521 higher for assistant professors than for associate professors, which actually is good for women. I was most interested in the results of salary. For every one unit increase in salary, an individual is 1.152522 times more likely to be male. This reveals some inequality, but women only comprise a tenth of the dataset, so that most likely contributes to the difference in odds seen in the model. In fact, the summary of the model shows that none of the variables included are significant predictors of sex.</p>
+<p>All individuals were predicted to be male by the model, so the confusion matrix shows 358 true positives and 39 false positives, which is the exact number of males and females in the dataset. The model had an accuracy of 0.9017632 because females again make up only 10% of the data. Sensitivity, or the TPR, was 1, as all males were classified correctly. On the other hand, specificity, or the TNR, was 0 because all females were predicted to be male. I generated an ROC curve, the area underneath of which is the AUC. This was computed to be 0.6796304 which is far from the perfect AUC of 1.</p>
+<p>Using 10-fold repeated sub-sampling, my model was tested on “outside” data to test its efficacy. Accuracy of the model slightly increased to 0.901859. Sensitivity and specificity remained constant, so the model continued to classify all females as male. The AUC decreased to 0.606613, which is once again, not a good value.</p>
+<pre class="r"><code>sal_las &lt;- sal2%&gt;%select(yrs.since.phd,yrs.service,salary,y, discipline)
+sal%&gt;%select(discipline)%&gt;%mutate(disc=ifelse(discipline==&quot;A&quot;,1,0))%&gt;%as.matrix%&gt;%head()</code></pre>
+<pre><code>##      discipline disc
+## [1,] &quot;B&quot;        &quot;0&quot; 
+## [2,] &quot;B&quot;        &quot;0&quot; 
+## [3,] &quot;B&quot;        &quot;0&quot; 
+## [4,] &quot;B&quot;        &quot;0&quot; 
+## [5,] &quot;B&quot;        &quot;0&quot; 
+## [6,] &quot;B&quot;        &quot;0&quot;</code></pre>
+<pre class="r"><code>w&lt;-as.matrix(sal$discipline)
+x&lt;-sal_las%&gt;%select(-discipline)%&gt;%as.matrix
+
+cv&lt;-cv.glmnet(x,w,family=&quot;binomial&quot;)
+lasso&lt;-glmnet(x,w,family=&quot;binomial&quot;,lambda=cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 5 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                          s0
+## (Intercept)   -3.769542e-01
+## yrs.since.phd -3.389210e-02
+## yrs.service    .           
+## salary         1.153799e-05
+## y              .</code></pre>
+<pre class="r"><code>#only yrs.since.phd and salary are significant predictors of discipline
+
+sal_las &lt;- sal%&gt;%mutate(discipline=ifelse(discipline==&quot;A&quot;,1,0))
+sal_las1 &lt;- sal_las%&gt;%select(-y,-rank,-sex)%&gt;%as.data.frame
+set.seed(1234)
+
+k=10 
+
+data1&lt;-sal_las1[sample(nrow(sal_las1)),] 
+folds&lt;-cut(seq(1:nrow(sal_las1)),breaks=k,labels=F)
+
+diags&lt;-NULL
+for(i in 1:k){
+
+  train&lt;-data1[folds!=i,] 
+  test&lt;-data1[folds==i,]
+  truth&lt;-test$discipline
+  
+
+  fit&lt;-glm(discipline~yrs.since.phd+salary,data=train,family=&quot;binomial&quot;)
+  probs&lt;-predict(fit,newdata = test,type=&quot;response&quot;)
+  
+ 
+  diags&lt;-rbind(diags,class_diag(probs,truth))
+}
+
+
+summarize_all(diags,mean) </code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.6330128 0.4811869 0.7755812 0.6462121 0.7142284</code></pre>
+<p>I selected new variables to use in a lasso regression because sex had no significant predictors. I decided to predict discipline from years since PhD, years of service, salary, and sex. The levels of this variable correspond to theoretical (A) and applied (B) departments. Following lasso regression, the only significant variables were determined to be years since PhD and salary. This model has an out-of-sample AUC of 0.7142284. This AUC is good and greater than the non-lassoed model above.</p>

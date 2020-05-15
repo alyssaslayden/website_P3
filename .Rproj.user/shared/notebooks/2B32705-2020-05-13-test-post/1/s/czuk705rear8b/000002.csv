@@ -1,0 +1,6 @@
+"0","star<-star%>%filter(gender==""male"")%>% mutate(rank="""",62)%>%"
+"0","  select(rank,name,species,homeworld,hair_color,eye_color)"
+"0","mine<-star%>%mutate(rank=c(13,24,30,7,2,4,25,18,1,38,11,28,33,31,6,21,5,26,32,12,37,41,20,57,22,42,34,52,35,46,53,15,10,59,61,54,45,17,51,16,56,60,55,40,47,23,36,62,29,14,9,48,44,50,39,49,43,19,27,58,8,3))"
+"0","mine <- mine%>%arrange(rank)%>%select(rank,name)"
+"0","names <- mine%>%select(name)"
+"0","ranks <- mine%>%select(rank)"

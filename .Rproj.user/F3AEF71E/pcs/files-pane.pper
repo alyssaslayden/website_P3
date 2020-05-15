@@ -1,0 +1,9 @@
+{
+    "path" : "~/website_P3/content/blog",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}

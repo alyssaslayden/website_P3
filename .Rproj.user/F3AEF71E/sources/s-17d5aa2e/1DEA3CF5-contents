@@ -1,0 +1,54 @@
+---
+title: "Men of Star Wars"
+author: "Alyssa Slayden"
+date: "5/3/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{python}
+ranks = list()
+names = list()
+``` 
+
+```{r}
+library(reticulate)
+library(dplyr)
+data("starwars")
+star <- starwars
+star<-star%>%filter(gender=="male")%>% mutate(rank="",62)%>%
+  select(rank,name,species,homeworld,hair_color,eye_color)
+mine<-star%>%mutate(rank=c(13,24,30,7,2,4,25,18,1,38,11,28,33,31,6,21,5,26,32,12,37,41,20,57,22,42,34,52,35,46,53,15,10,59,61,54,45,17,51,16,56,60,55,40,47,23,36,62,29,14,9,48,44,50,39,49,43,19,27,58,8,3))%>%
+  arrange(rank)%>%select(rank,name)
+```
+
+```{python}
+
+```
+
+```{r}
+star <- starwars
+star<-star%>%filter(gender=="male")%>% mutate(rank="",62)%>%
+  select(rank,name,species,homeworld,hair_color,eye_color)
+mine<-star%>%mutate(rank=c(13,24,30,7,2,4,25,18,1,38,11,28,33,31,6,21,5,26,32,12,37,41,20,57,22,42,34,52,35,46,53,15,10,59,61,54,45,17,51,16,56,60,55,40,47,23,36,62,29,14,9,48,44,50,39,49,43,19,27,58,8,3))%>%
+  arrange(rank)%>%select(rank,name)
+names = list(star$name)
+ranks = list(star$rank)
+```
+
+```{python}
+matches = {}
+for i in r.names:
+  index = r.names.index(i)
+  rank = r.ranks[index]
+  matches[i]=rank
+
+for c in matches:
+  print(c, "is", matches[c])
+```
+

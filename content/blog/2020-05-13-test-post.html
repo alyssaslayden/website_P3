@@ -1,0 +1,89 @@
+---
+title: Ranking Star Wars Characters
+author: Alyssa Slayden
+date: '2020-05-13'
+slug: test-post
+categories: []
+tags: 
+description: ''
+---
+
+
+
+<p>.<img src="/blog/2020-05-13-test-post_files/af7a532daf9389739b887ffd1fa5e4d6.jpg" style="width:90.0%" style="height:75.0%" /></p>
+<p>This all started because of a very contentious debate about the attractiveness of various Star Wars characters. I decided to use the Star Wars dataset to settle things once and for all. I cleaned up the dataset, so that it just contained the male characters and what I thought were important descriptors, like species, hair, and eye color. I also added a column for rank, so that my friends could fill out their own copies. This was a completely ridiculous activity that could only have been born out of quarantine boredom.</p>
+<pre class="r"><code>star&lt;-star%&gt;%filter(gender==&quot;male&quot;)%&gt;% mutate(rank=&quot;&quot;,62)%&gt;%
+  select(rank,name,species,homeworld,hair_color,eye_color)
+mine&lt;-star%&gt;%mutate(rank=c(7,24,30,13,2,4,25,18,1,38,11,28,33,31,6,21,5,26,32,12,37,41,20,57,22,42,34,52,35,46,53,15,10,59,61,54,45,17,51,16,56,60,55,40,47,23,36,62,29,14,9,48,44,50,39,49,43,19,27,58,8,3))
+mine &lt;- mine%&gt;%arrange(rank)%&gt;%select(rank,name)
+names &lt;- mine%&gt;%select(name)
+ranks &lt;- mine%&gt;%select(rank)</code></pre>
+<p>I filled in all of my personal rankings on a printed out copy of the dataset, but that wasn’t good enough. The fact that my paper wasn’t arranged in ascending order really bothered me, so I proceeded to hard code all of my opinions into the rank column of the dataset. My friends met my ordered dataset with another round of heated debate.</p>
+<p>That was the last of things until it came time for me to build this website. I thought that anyone who came across my portfolio would find my ridiculous use of R entertaining. Please enjoy my thoughts on the attractiveness of the males who lived a long time ago, in a galaxy far far away.</p>
+<pre class="python"><code>for i in r.names:
+    index = r.names.index(i)
+    rank = r.ranks[index]
+    print(&quot;#&quot;+rank+&quot; &quot;+i)</code></pre>
+<pre><code>## #1 Han Solo
+## #2 Obi-Wan Kenobi
+## #3 Poe Dameron
+## #4 Anakin Skywalker
+## #5 Lando Calrissian
+## #6 Boba Fett
+## #7 Luke Skywalker
+## #8 Finn
+## #9 Jango Fett
+## #10 Darth Maul
+## #11 Wedge Antilles
+## #12 Arvel Crynyd
+## #13 Biggs Darklighter
+## #14 Bail Prestor Organa
+## #15 Quarsh Panaka
+## #16 Kit Fisto
+## #17 Mace Windu
+## #18 Chewbacca
+## #19 Tarfful
+## #20 Qui-Gon Jinn
+## #21 Bossk
+## #22 Finis Valorum
+## #23 Gregar Typho
+## #24 Darth Vader
+## #25 Wilhuff Tarkin
+## #26 Lobot
+## #27 Raymus Antilles
+## #28 Jek Tono Porkins
+## #29 Dooku
+## #30 Owen Lars
+## #31 Palpatine
+## #32 Ackbar
+## #33 Yoda
+## #34 Roos Tarpals
+## #35 Ric Olie
+## #36 Cliegg Lars
+## #37 Wicket Systri Warrick
+## #38 Greedo
+## #39 Wat Tambor
+## #40 Plo Koon
+## #41 Nien Nunb
+## #42 Jar Jar Binks
+## #43 Grievous
+## #44 Lama Su
+## #45 Ben Quadinaros
+## #46 Watto
+## #47 Mas Amedda
+## #48 Dexter Jettster
+## #49 San Hill
+## #50 Ratts Tyerell
+## #51 Ki-Adi-Mundi
+## #52 Rugor Nass
+## #53 Sebulba
+## #54 Gasgano
+## #55 Yarael Poof
+## #56 Eeth Koth
+## #57 Nute Gunray
+## #58 Tion Medon
+## #59 Bib Fortuna
+## #60 Saesee Tiin
+## #61 Dud Bolt
+## #62 Poggle the Lesser</code></pre>
+<p>Note: For some reason, Kylo Ren was not in the dataset, but if he had been, he would have been ranked near the top.</p>
