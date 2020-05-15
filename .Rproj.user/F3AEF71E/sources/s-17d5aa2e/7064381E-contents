@@ -21,9 +21,7 @@ theme = "hugo-sustain"
 
 [params.social]
   Email         = "alyssanoel42@gmail.com"
-  Github        = ""
   Twitter       = "alyssanoel42"
-  LinkedIn      = "https://www.linkedin.com/in/alyssa-slayden-0682141a8/"
   Instagram     = "alyssanoel42"
 ## Main Menu
 [[menu.main]]
