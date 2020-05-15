@@ -8,11 +8,14 @@ tags:
 title: Projects
 ---
 
-## Computational Biology
-### Projects
+### Computational Biology
+#### Projects
 
 - [Global Suicide Statistics and the World Happiness Report](/project1/)
 
 - [Salaries of Professors as Influenced by Experience, Sex, and Department](/project2/)
 
-- [Python Test](/python1/)
+### Elements of Computers and Programming
+#### Assignments
+
+- [Assignment 0](/python1/)
