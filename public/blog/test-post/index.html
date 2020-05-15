@@ -81,7 +81,8 @@ mine &lt;- mine%&gt;%arrange(rank)%&gt;%select(rank,name)
 names &lt;- mine%&gt;%select(name)
 ranks &lt;- mine%&gt;%select(rank)</code></pre>
 <p>I filled in all of my personal rankings on a printed out copy of the dataset, but that wasn’t good enough. The fact that my paper wasn’t arranged in ascending order really bothered me, so I proceeded to hard code all of my opinions into the rank column of the dataset. My friends met my ordered dataset with another round of heated debate.</p>
-<p>That was the last of things until it came time for me to build this website. I thought that anyone who came across my portfolio would find my ridiculous use of R entertaining. Please enjoy my thoughts on the attractiveness of the males who lived a long time ago, in a galaxy far far away.</p>
+<p>That was the last of things until it came time for me to build this website. Using reticulate, I passed the lists of names and ranks that I created in R to a Python code chunk. This allowed me to make a cleaner string print out for this blog post.</p>
+<p>I hope that anyone who comes across my portfolio will find my ridiculous use of R entertaining. Please enjoy my thoughts on the attractiveness of the males who lived a long time ago, in a galaxy far far away.</p>
 <pre class="python"><code>for i in r.names:
     index = r.names.index(i)
     rank = r.ranks[index]
