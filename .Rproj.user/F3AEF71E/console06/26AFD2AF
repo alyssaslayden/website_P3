@@ -303,3 +303,53 @@ remote: Resolving deltas:   0% (0/19)[Kremote: Resolving deltas:   5% (1/19)[
 To https://github.com/alyssaslayden/website_P3.git
    d9ad75a..778a345  master -> master
 ]0;/stor/home/ans4239/website_P3]0;ans4239@educcomp01: ~/website_P3[01;32mans4239@educcomp01[00m:[01;34m~/website_P3[00m$ git add .
+]0;/stor/home/ans4239/website_P3]0;ans4239@educcomp01: ~/website_P3[01;32mans4239@educcomp01[00m:[01;34m~/website_P3[00m$ git add .[Kadd .[Kadd .push origin mastercommit -m "second go round"[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Kthirsd[K[Kd time is the charm'[K"
+[master 294dc5a] third time is the charm
+ Committer: Alyssa Slayden <ans4239@educcomp01.ccbb.utexas.edu>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 36 insertions(+), 5 deletions(-)
+]0;/stor/home/ans4239/website_P3]0;ans4239@educcomp01: ~/website_P3[01;32mans4239@educcomp01[00m:[01;34m~/website_P3[00m$ git push origin master
+Username for 'https://github.com': alyssaslayden
+Password for 'https://alyssaslayden@github.com': 
+Counting objects: 11, done.
+Delta compression using up to 16 threads.
+Compressing objects:   9% (1/11)   Compressing objects:  18% (2/11)   Compressing objects:  27% (3/11)   Compressing objects:  36% (4/11)   Compressing objects:  45% (5/11)   Compressing objects:  54% (6/11)   Compressing objects:  63% (7/11)   Compressing objects:  72% (8/11)   Compressing objects:  81% (9/11)   Compressing objects:  90% (10/11)   Compressing objects: 100% (11/11)   Compressing objects: 100% (11/11), done.
+Writing objects:   9% (1/11)   Writing objects:  18% (2/11)   Writing objects:  27% (3/11)   Writing objects:  36% (4/11)   Writing objects:  45% (5/11)   Writing objects:  54% (6/11)   Writing objects:  63% (7/11)   Writing objects:  72% (8/11)   Writing objects:  81% (9/11)   Writing objects:  90% (10/11)   Writing objects: 100% (11/11)   Writing objects: 100% (11/11), 1.61 KiB | 551.00 KiB/s, done.
+Total 11 (delta 6), reused 0 (delta 0)
+remote: Resolving deltas:   0% (0/6)[Kremote: Resolving deltas:  16% (1/6)[Kremote: Resolving deltas:  33% (2/6)[Kremote: Resolving deltas:  50% (3/6)[Kremote: Resolving deltas:  66% (4/6)[Kremote: Resolving deltas:  83% (5/6)[Kremote: Resolving deltas: 100% (6/6)[Kremote: Resolving deltas: 100% (6/6), completed with 6 local objects.[K
+To https://github.com/alyssaslayden/website_P3.git
+   778a345..294dc5a  master -> master
+]0;/stor/home/ans4239/website_P3]0;ans4239@educcomp01: ~/website_P3[01;32mans4239@educcomp01[00m:[01;34m~/website_P3[00m$ python3
+Python 3.6.9 (default, Apr 18 2020, 01:56:04) 
+[GCC 8.4.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> print("      A", end = "             ")
+      A             >>> quit
+Use quit() or Ctrl-D (i.e. EOF) to exit
+>>> quit()
+]0;/stor/home/ans4239/website_P3]0;ans4239@educcomp01: ~/website_P3[01;32mans4239@educcomp01[00m:[01;34m~/website_P3[00m$ python
+Python 2.7.17 (default, Apr 15 2020, 17:20:14) 
+[GCC 7.5.0] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> print("      A", end = "             ")
+  File "<stdin>", line 1
+    print("      A", end = "             ")
+                         ^
+SyntaxError: invalid syntax
+>>> quit()
+]0;/stor/home/ans4239/website_P3]0;ans4239@educcomp01: ~/website_P3[01;32mans4239@educcomp01[00m:[01;34m~/website_P3[00m$ which python3
+/usr/bin/python3
+]0;/stor/home/ans4239/website_P3]0;ans4239@educcomp01: ~/website_P3[01;32mans4239@educcomp01[00m:[01;34m~/website_P3[00m$ quitt[K()
+> ^C
+]0;/stor/home/ans4239/website_P3]0;ans4239@educcomp01: ~/website_P3[01;32mans4239@educcomp01[00m:[01;34m~/website_P3[00m$ git add .

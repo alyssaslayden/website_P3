@@ -15,3 +15,4 @@ title: Projects
 
 - [Salaries of Professors as Influenced by Experience, Sex, and Department](/project2/)
 
+- [Python Test](/python1/)

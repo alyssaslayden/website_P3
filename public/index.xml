@@ -39,6 +39,15 @@
     </item>
     
     <item>
+      <title>CS 303E Assignment 0</title>
+      <link>/python1/</link>
+      <pubDate>Wed, 12 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/python1/</guid>
+      <description># Question 1: Hello World! print(&amp;quot;Hello World!&amp;quot;) # Question 2: Initials ## Hello World! print(&amp;quot; A&amp;quot;, end = &amp;quot; &amp;quot;) ## A print(&amp;quot;S&amp;quot; * 9) ## SSSSSSSSS print(&amp;quot; A A&amp;quot;, end= &amp;quot; &amp;quot;) ## A A print(&amp;quot;S&amp;quot;) ## S print(&amp;quot; A A&amp;quot;, end= &amp;quot; &amp;quot;) ## A A print(&amp;quot;S&amp;quot;) ## S print(&amp;quot; A A&amp;quot;, end= &amp;quot; &amp;quot;) ## A A print(&amp;quot;S&amp;quot; * 9) ## SSSSSSSSS print(&amp;quot; &amp;quot;, end= &amp;quot;&amp;quot;) print( &amp;quot;A&amp;quot; * 9, end= &amp;quot; &amp;quot;) ## AAAAAAAAA print(&amp;quot;S&amp;quot;) ## S print(&amp;quot; A A&amp;quot;,end= &amp;quot; &amp;quot;) ## A A print(&amp;quot;S&amp;quot;) #print(&amp;quot;A A&amp;quot;, end= &amp;quot; &amp;quot;) ## S print(&amp;quot;S&amp;quot; * 9) # Question 3: Nighthawk ## SSSSSSSSS print(&amp;quot; /\\&amp;quot;) ## /\ print(&amp;quot; /&amp;lt;&amp;gt;\\&amp;quot;) ## /&amp;lt;&amp;gt;\ print(&amp;quot; / &amp;#39;&amp;#39; \\&amp;quot;) ## / &amp;#39;&amp;#39; \ print(&amp;quot; / \\&amp;quot;) ## / \ print(&amp;quot;/ /\\/\\ \\&amp;quot;) ## / /\/\ \ print(&amp;quot;\\/ /\\ \\/&amp;quot;) # Question 4: Favorite Book ## \/ /\ \/ print(&amp;quot;My favorite book is, \&amp;quot;Grapes of Wrath\&amp;quot; by John Steinbeck.</description>
+    </item>
+    
+    <item>
       <title>Projects</title>
       <link>/projects/</link>
       <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
@@ -46,6 +55,7 @@
       <guid>/projects/</guid>
       <description>Computational Biology Projects   Global Suicide Statistics and the World Happiness Report
   Salaries of Professors as Influenced by Experience, Sex, and Department
+  Python Test
   </description>
     </item>
     

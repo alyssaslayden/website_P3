@@ -1,0 +1,51 @@
+---
+title: "CS 303E Assignment 0"
+author: "Alyssa Slayden"
+date: "2018-09-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+use_python("/usr/bin/python3")
+```
+
+
+```{python}
+# Question 1: Hello World!
+print("Hello World!")
+# Question 2: Initials
+print("      A", end = "             ")
+print("S" * 9)
+print("     A A", end= "           ")
+print("S")
+print("    A   A", end= "          ")
+print("S")
+print("   A     A", end= "          ")
+print("S" * 9)
+print("  ", end= "")
+print(  "A" * 9, end= "                  ")
+print("S")
+print(" A         A",end= "                 ")
+print("S")
+#print("A           A", end= "       ")
+print("S" * 9)
+# Question 3: Nighthawk
+print("    /\\")
+print("   /<>\\")
+print("  / '' \\")
+print(" /      \\")
+print("/  /\\/\\  \\")
+print("\\/  /\\  \\/")
+# Question 4: Favorite Book
+print("My favorite book is, \"Grapes of Wrath\" by John Steinbeck.")
+#Question 5: Place to Go
+print("I would really like to visit...\nAthens, Greece")
+#Question 6: Quote
+print("\"Everyone said to Vincent Van Gogh,\n'You can't be a great painter,\nyou only have one ear.'")
+print("And you know what he said?\n'I can't hear you.' \"")
+print("          -Steve Carell")
+
+
+```
